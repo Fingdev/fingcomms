@@ -446,8 +446,16 @@
 
                 <div class="panel-section" v-if="activeTab === 'manage'">
                     <h3 class="panel-title">Administrar Grupos</h3>
+                    <div class="search-box" style="margin-bottom: 20px;">
+                        <input 
+                            type="text" 
+                            class="form-input" 
+                            placeholder="Buscar grupos..." 
+                            v-model="searchQuery"
+                        >
+                    </div>
                     <div class="groups-list">
-                        <div class="group-list-item" v-for="group in groups" :key="group.id">
+                        <div class="group-list-item" v-for="group in filteredGroups" :key="group.id">
                             <div class="group-list-info">
                                 <div class="group-list-name">{{ group.name }}</div>
                                 <div class="group-list-desc">{{ group.description }}</div>
@@ -592,7 +600,7 @@
     </div>
 
     <script>
-        const { createApp, ref, onMounted } = Vue;
+        const { createApp, ref, onMounted, computed } = Vue;
 
         createApp({
             setup() {
@@ -613,6 +621,7 @@
                 const linkToDelete = ref(null);
                 const showDeleteLinkConfirm = ref(false);
                 const token = ref('');
+                const searchQuery = ref('');
 
                 const baseUrl = window.location.pathname.split('/').slice(0, -1).join('/') || '';
                 const apiUrl = (path) => `${baseUrl}${path}`;
@@ -712,6 +721,15 @@
                         console.error(e);
                     }
                 };
+
+                const filteredGroups = computed(() => {
+                    if (!searchQuery.value.trim()) return groups.value;
+                    const query = searchQuery.value.toLowerCase();
+                    return groups.value.filter(g => 
+                        g.name.toLowerCase().includes(query) || 
+                        (g.description && g.description.toLowerCase().includes(query))
+                    );
+                });
 
                 const togglePin = async (group) => {
                     try {
