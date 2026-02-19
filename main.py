@@ -181,10 +181,16 @@ def admin_login(login: AdminLogin):
     global lockout_data
 
     if lockout_data["locked_until"] and datetime.now() < lockout_data["locked_until"]:
-        remaining = (lockout_data["locked_until"] - datetime.now()).seconds
+        remaining = (lockout_data["locked_until"] - datetime.now()).total_seconds()
+        hours = int(remaining // 3600)
+        minutes = int((remaining % 3600) // 60)
+        if hours > 0:
+            detail = f"Cuenta bloqueada. Intenta en {hours} hora(s)"
+        else:
+            detail = f"Cuenta bloqueada. Intenta en {minutes} minutos"
         raise HTTPException(
             status_code=403,
-            detail=f"Cuenta bloqueada. Intenta en {remaining // 60} minutos",
+            detail=detail,
         )
 
     if login.password == ADMIN_PASSWORD:
@@ -193,9 +199,9 @@ def admin_login(login: AdminLogin):
 
     lockout_data["attempts"] += 1
     if lockout_data["attempts"] >= 3:
-        lockout_data["locked_until"] = datetime.now() + timedelta(hours=4)
+        lockout_data["locked_until"] = datetime.now() + timedelta(hours=24)
         raise HTTPException(
-            status_code=403, detail="Demasiados intentos. Cuenta bloqueada por 4 horas"
+            status_code=403, detail="Demasiados intentos. Cuenta bloqueada por 24 horas"
         )
 
     raise HTTPException(
@@ -296,7 +302,9 @@ def serve_admin():
 
 @app.get("/{path:path}")
 def serve_catch_all(path: str):
-    if path == "admin":
+    if path.startswith("api/"):
+        raise HTTPException(status_code=404, detail="Not found")
+    if path == "admin" or path == "admin/":
         return FileResponse("static/admin.html")
     return FileResponse("static/index.html")
 
