@@ -1,0 +1,297 @@
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
+from typing import Optional, List
+import os
+from datetime import datetime, timedelta
+
+from sqlalchemy.orm import Session
+
+from database import engine, SessionLocal, Group, ImportantLink, Base, get_db
+
+app = FastAPI()
+
+Base.metadata.create_all(bind=engine)
+
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
+
+lockout_data = {"attempts": 0, "locked_until": None}
+
+
+def levenshtein_distance(s1: str, s2: str) -> int:
+    if len(s1) < len(s2):
+        return levenshtein_distance(s2, s1)
+    if len(s2) == 0:
+        return len(s1)
+
+    previous_row = range(len(s2) + 1)
+    for i, c1 in enumerate(s1):
+        current_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+    return previous_row[-1]
+
+
+def fuzzy_match(query: str, text: str, threshold: float = 0.3) -> float:
+    query = query.lower()
+    text = text.lower()
+
+    if query in text:
+        return 1.0
+
+    words = text.split()
+    for word in words:
+        if query in word:
+            return 0.9
+
+    max_score = 0.0
+    for word in words:
+        if len(word) >= len(query):
+            distance = levenshtein_distance(query, word)
+            max_len = max(len(query), len(word))
+            score = 1 - (distance / max_len)
+            if score > max_score:
+                max_score = score
+
+    if max_score >= (1 - threshold):
+        return max_score
+    return 0.0
+
+
+def fuzzy_search(query: str, groups: List, threshold: float = 0.3):
+    results = []
+    for group in groups:
+        name_score = fuzzy_match(query, group.name, threshold)
+        desc_score = fuzzy_match(query, group.description or "", threshold)
+        total_score = max(name_score, desc_score * 0.7)
+
+        if total_score > 0:
+            results.append((group, total_score))
+
+    results.sort(key=lambda x: x[1], reverse=True)
+    return [r[0] for r in results]
+
+
+class GroupCreate(BaseModel):
+    name: str
+    description: str = ""
+    url: str = ""
+
+
+class GroupUpdate(BaseModel):
+    id: int
+    name: str
+    description: str
+    url: str
+
+
+class PinGroup(BaseModel):
+    group_id: int
+    pinned: bool
+
+
+class AdminLogin(BaseModel):
+    password: str
+
+
+@app.get("/api/groups")
+def get_groups(q: Optional[str] = None, db: Session = Depends(get_db)):
+    groups = db.query(Group).all()
+
+    if q and q.strip():
+        results = fuzzy_search(q, groups)
+        return [group_to_dict(g) for g in results]
+
+    pinned = [g for g in groups if g.pinned]
+    unpinned = [g for g in groups if not g.pinned]
+    return [group_to_dict(g) for g in pinned + unpinned]
+
+
+def group_to_dict(group: Group):
+    return {
+        "id": group.id,
+        "name": group.name,
+        "description": group.description,
+        "url": group.url,
+        "pinned": group.pinned,
+        "created_at": group.created_at.isoformat() if group.created_at else None,
+    }
+
+
+@app.post("/api/groups")
+def create_group(group: GroupCreate, db: Session = Depends(get_db)):
+    if len(group.name) < 3:
+        raise HTTPException(
+            status_code=400, detail="El nombre debe tener al menos 3 caracteres"
+        )
+
+    new_group = Group(
+        name=group.name, description=group.description, url=group.url, pinned=False
+    )
+    db.add(new_group)
+    db.commit()
+    db.refresh(new_group)
+    return group_to_dict(new_group)
+
+
+@app.put("/api/groups")
+def update_group(group: GroupUpdate, db: Session = Depends(get_db)):
+    db_group = db.query(Group).filter(Group.id == group.id).first()
+    if not db_group:
+        raise HTTPException(status_code=404, detail="Grupo no encontrado")
+
+    db_group.name = group.name
+    db_group.description = group.description
+    db_group.url = group.url
+    db.commit()
+    db.refresh(db_group)
+    return {"success": True, "group": group_to_dict(db_group)}
+
+
+@app.delete("/api/groups/{group_id}")
+def delete_group(group_id: int, db: Session = Depends(get_db)):
+    db_group = db.query(Group).filter(Group.id == group_id).first()
+    if not db_group:
+        raise HTTPException(status_code=404, detail="Grupo no encontrado")
+
+    db.delete(db_group)
+    db.commit()
+    return {"success": True}
+
+
+@app.post("/api/groups/pin")
+def pin_group(pin_data: PinGroup, db: Session = Depends(get_db)):
+    db_group = db.query(Group).filter(Group.id == pin_data.group_id).first()
+    if not db_group:
+        raise HTTPException(status_code=404, detail="Grupo no encontrado")
+
+    db_group.pinned = pin_data.pinned
+    db.commit()
+    db.refresh(db_group)
+    return {"success": True, "group": group_to_dict(db_group)}
+
+
+@app.post("/api/admin/login")
+def admin_login(login: AdminLogin):
+    global lockout_data
+
+    if lockout_data["locked_until"] and datetime.now() < lockout_data["locked_until"]:
+        remaining = (lockout_data["locked_until"] - datetime.now()).seconds
+        raise HTTPException(
+            status_code=403,
+            detail=f"Cuenta bloqueada. Intenta en {remaining // 60} minutos",
+        )
+
+    if login.password == ADMIN_PASSWORD:
+        lockout_data = {"attempts": 0, "locked_until": None}
+        return {"success": True, "message": "Admin autenticado"}
+
+    lockout_data["attempts"] += 1
+    if lockout_data["attempts"] >= 3:
+        lockout_data["locked_until"] = datetime.now() + timedelta(hours=4)
+        raise HTTPException(
+            status_code=403, detail="Demasiados intentos. Cuenta bloqueada por 4 horas"
+        )
+
+    raise HTTPException(
+        status_code=401,
+        detail=f"Contraseña incorrecta. Intentos: {lockout_data['attempts']}/3",
+    )
+
+
+@app.get("/api/admin/status")
+def admin_status():
+    if lockout_data["locked_until"] and datetime.now() < lockout_data["locked_until"]:
+        remaining = int((lockout_data["locked_until"] - datetime.now()).total_seconds())
+        return {"locked": True, "remaining_seconds": remaining}
+    return {"locked": False, "attempts": lockout_data["attempts"]}
+
+
+class ImportantLinkCreate(BaseModel):
+    title: str
+    description: str = ""
+    url: str
+
+
+class ImportantLinkUpdate(BaseModel):
+    id: int
+    title: str
+    description: str
+    url: str
+
+
+def link_to_dict(link: ImportantLink):
+    return {
+        "id": link.id,
+        "title": link.title,
+        "description": link.description,
+        "url": link.url,
+        "created_at": link.created_at.isoformat() if link.created_at else None,
+    }
+
+
+@app.get("/api/important-links")
+def get_important_links(db: Session = Depends(get_db)):
+    links = db.query(ImportantLink).all()
+    return [link_to_dict(l) for l in links]
+
+
+@app.post("/api/important-links")
+def create_important_link(link: ImportantLinkCreate, db: Session = Depends(get_db)):
+    if len(link.title) < 3:
+        raise HTTPException(
+            status_code=400, detail="El título debe tener al menos 3 caracteres"
+        )
+    if not link.url:
+        raise HTTPException(status_code=400, detail="La URL es requerida")
+
+    new_link = ImportantLink(
+        title=link.title, description=link.description, url=link.url
+    )
+    db.add(new_link)
+    db.commit()
+    db.refresh(new_link)
+    return link_to_dict(new_link)
+
+
+@app.put("/api/important-links")
+def update_important_link(link: ImportantLinkUpdate, db: Session = Depends(get_db)):
+    db_link = db.query(ImportantLink).filter(ImportantLink.id == link.id).first()
+    if not db_link:
+        raise HTTPException(status_code=404, detail="Link no encontrado")
+
+    db_link.title = link.title
+    db_link.description = link.description
+    db_link.url = link.url
+    db.commit()
+    db.refresh(db_link)
+    return {"success": True, "link": link_to_dict(db_link)}
+
+
+@app.delete("/api/important-links/{link_id}")
+def delete_important_link(link_id: int, db: Session = Depends(get_db)):
+    db_link = db.query(ImportantLink).filter(ImportantLink.id == link_id).first()
+    if not db_link:
+        raise HTTPException(status_code=404, detail="Link no encontrado")
+
+    db.delete(db_link)
+    db.commit()
+    return {"success": True}
+
+
+@app.get("/")
+def serve_index():
+    return FileResponse("static/index.html")
+
+
+@app.get("/admin")
+def serve_admin():
+    return FileResponse("static/admin.html")
+
+
+app.mount("/static", StaticFiles(directory="static"), name="static")

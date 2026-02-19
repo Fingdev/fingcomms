@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fingcomms</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #161b22;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        #app {
+            min-height: 100vh;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: #161b22;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            border-bottom: 1px solid #30363d;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            color: #a388f3;
+            font-size: 22px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-link {
+            color: #8b949e;
+            font-size: 22px;
+            transition: color 0.2s ease;
+        }
+
+        .icon-link:hover {
+            color: #ffffff;
+        }
+
+        .create-btn {
+            background-color: #957dcd;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .create-btn:hover {
+            background-color: #a88de0;
+            transform: translateY(-1px);
+        }
+
+        .main-content {
+            padding-top: 100px;
+            padding-bottom: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 24px;
+            padding-right: 24px;
+        }
+
+        .important-links-section {
+            margin-bottom: 40px;
+        }
+
+        .important-links-title {
+            font-size: 14px;
+            color: #8b949e;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .important-links-grid {
+            display: grid;
+            gap: 16px;
+            padding: 0 20px 10px;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        .important-links-grid.cols-1 { grid-template-columns: 1fr; }
+        .important-links-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .important-links-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+        .important-link-card {
+            background: linear-gradient(135deg, rgba(149, 125, 205, 0.15), rgba(149, 125, 205, 0.05));
+            border: 1px solid rgba(149, 125, 205, 0.3);
+            border-radius: 12px;
+            padding: 16px 20px;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 150px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .important-link-card:hover {
+            transform: translateY(-2px);
+            border-color: #957dcd;
+            box-shadow: 0 4px 20px rgba(149, 125, 205, 0.2);
+        }
+
+        .important-link-card .link-content {
+            flex: 1;
+        }
+
+        .important-link-card .link-btn-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: auto;
+        }
+
+        .important-link-card .link-content {
+            flex: 1;
+        }
+
+        .important-link-card .link-btn-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: auto;
+        }
+
+        .important-link-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .important-link-description {
+            font-size: 13px;
+            color: #8b949e;
+            text-align: center;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .important-link-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: transparent;
+            border: 1px solid #957dcd;
+            color: #957dcd;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+
+        .important-link-btn:hover {
+            background-color: #957dcd;
+            color: #161b22;
+        }
+
+        .search-container {
+            max-width: 500px;
+            margin: 0 auto 40px;
+            position: relative;
+        }
+
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            color: #8b949e;
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 44px;
+            font-size: 15px;
+            background-color: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            color: #ffffff;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: #a388f3;
+            box-shadow: 0 0 0 3px rgba(33, 188, 98, 0.15);
+        }
+
+        .search-input::placeholder {
+            color: #8b949e;
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #8b949e;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-clear:hover {
+            color: #ffffff;
+        }
+
+        .groups-grid {
+            display: grid;
+            gap: 20px;
+            padding: 0 20px 20px;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        .groups-grid.cols-1 { grid-template-columns: 1fr; }
+        .groups-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .groups-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .groups-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .group-card {
+            background-color: #2d333b;
+            border-radius: 16px;
+            padding: 16px 24px;
+            transition: all 0.3s ease;
+            border: 1px solid #3d444d;
+            display: flex;
+            flex-direction: column;
+            min-height: 180px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .group-card:hover {
+            background-color: #373e47;
+            transform: translateY(-6px);
+            border-color: #545d68;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .group-card .card-content {
+            flex: 1;
+        }
+
+        .group-card .join-btn-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: auto;
+        }
+
+        .group-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .group-description {
+            font-size: 14px;
+            color: #8b949e;
+            margin-bottom: 24px;
+            line-height: 1.5;
+            min-height: 42px;
+        }
+
+        .join-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #957dcd;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .join-btn:hover {
+            background-color: #a88de0;
+        }
+
+        .join-btn:active {
+            transform: scale(0.98);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #8b949e;
+        }
+
+        .no-results-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background-color: #21262d;
+            border-radius: 16px;
+            padding: 32px;
+            width: 90%;
+            max-width: 420px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            color: #8b949e;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 15px;
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            color: #ffffff;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            border-color: #a388f3;
+        }
+
+        .form-input::placeholder {
+            color: #6e7681;
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: #a388f3;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: #a88de0;
+        }
+
+        .btn-secondary {
+            background-color: #30363d;
+            color: #ffffff;
+        }
+
+        .btn-secondary:hover {
+            background-color: #3d444d;
+        }
+
+        .error-text {
+            color: #f85149;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #a388f3;
+            color: #ffffff;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 500;
+            z-index: 300;
+            animation: toastIn 0.3s ease;
+        }
+
+        @keyframes toastIn {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        .toast.fade-out {
+            animation: toastOut 0.3s ease forwards;
+        }
+
+        @keyframes toastOut {
+            to { transform: translateX(-50%) translateY(20px); opacity: 0; }
+        }
+
+        .lockout-info {
+            background-color: rgba(248, 81, 73, 0.1);
+            border: 1px solid #f85149;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #f85149;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #8b949e;
+        }
+
+        .pinned-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: rgba(33, 188, 98, 0.15);
+            color: #a388f3;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .group-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .group-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .manage-btn {
+            background-color: #30363d;
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .manage-btn:hover {
+            background-color: #3d444d;
+        }
+
+        .groups-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .group-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background-color: #161b22;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .group-list-info {
+            flex: 1;
+        }
+
+        .group-list-name {
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .group-list-desc {
+            font-size: 12px;
+            color: #8b949e;
+        }
+
+        .pin-toggle {
+            background: none;
+            border: 1px solid #30363d;
+            color: #8b949e;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .pin-toggle:hover {
+            border-color: #a388f3;
+            color: #a388f3;
+        }
+
+        .pin-toggle.pinned {
+            background-color: #a388f3;
+            border-color: #a388f3;
+            color: #ffffff;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 16px;
+            }
+
+            .main-content {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-users logo-icon"></i>
+                Fingcomms
+            </div>
+            <div class="header-actions">
+                <a href="https://github.com/emiliano-gandini-outeda/group-manager" target="_blank" class="icon-link" title="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="/admin" class="create-btn">
+                    Admin
+                </a>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="important-links-section" v-if="importantLinks.length > 0">
+                <h3 class="important-links-title">Links Importantes</h3>
+                <div class="important-links-grid" :class="linksGridClass">
+                    <div class="important-link-card" v-for="link in filteredImportantLinks" :key="link.id">
+                        <div class="link-content">
+                            <h4 class="important-link-title">{{ link.title }}</h4>
+                            <p class="important-link-description">{{ link.description }}</p>
+                        </div>
+                        <div class="link-btn-wrapper">
+                            <a :href="link.url" target="_blank" class="important-link-btn">
+                                Ver Documento
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-container">
+                <div class="search-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        placeholder="Buscar grupos..." 
+                        v-model="searchQuery"
+                        @input="debounceSearch"
+                    >
+                    <button class="search-clear" @click="clearSearch" v-if="searchQuery">✕</button>
+                </div>
+            </div>
+
+            <div v-if="!loading">
+                <div class="groups-grid" v-for="(row, index) in groupRows" :key="index" :class="'cols-' + row.cols">
+                    <div class="group-card" v-for="group in row.items" :key="group.id">
+                    <div class="card-content">
+                        <div class="group-card-header">
+                            <div>
+                                <div class="pinned-badge" v-if="group.pinned"><i class="fas fa-thumbtack"></i> Fijado</div>
+                                <h3 class="group-name">{{ group.name }}</h3>
+                            </div>
+                        </div>
+                        <p class="group-description">{{ group.description }}</p>
+                    </div>
+                    <div class="join-btn-wrapper">
+                        <a :href="group.url" target="_blank" class="join-btn" v-if="group.url">
+                            Unirse al Grupo
+                        </a>
+                        <button class="join-btn" @click="joinGroup(group)" v-else>
+                            Unirse al Grupo
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" v-if="loading">
+                Cargando grupos...
+            </div>
+
+            <div class="no-results" v-if="!loading && filteredGroups.length === 0"> 
+                <p>No se encontraron grupos</p>
+            </div>
+        </main>
+
+        <div class="toast" v-if="showToast" :class="{ 'fade-out': toastFading }">
+            {{ toastMessage }}
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const groups = ref([]);
+                const importantLinks = ref([]);
+                const searchQuery = ref('');
+                const loading = ref(true);
+                const showModal = ref(false);
+                const modalMode = ref('login');
+                const isAdmin = ref(false);
+                const adminPassword = ref('');
+                const loginError = ref('');
+                const lockoutRemaining = ref(false);
+                const lockoutMinutes = ref(0);
+                const showToast = ref(false);
+                const toastMessage = ref('');
+                const toastFading = ref(false);
+
+                const newGroup = ref({
+                    name: '',
+                    description: ''
+                });
+
+                let searchTimeout = null;
+
+                const fetchGroups = async () => {
+                    loading.value = true;
+                    try {
+                        const url = searchQuery.value 
+                            ? `/api/groups?q=${encodeURIComponent(searchQuery.value)}`
+                            : '/api/groups';
+                        const response = await fetch(url);
+                        groups.value = await response.json();
+                    } catch (error) {
+                        console.error('Error fetching groups:', error);
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                const debounceSearch = () => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(fetchGroups, 200);
+                };
+
+                const clearSearch = () => {
+                    searchQuery.value = '';
+                    fetchGroups();
+                };
+
+                const filteredGroups = computed(() => {
+                    return groups.value;
+                });
+
+                const filteredImportantLinks = computed(() => {
+                    return importantLinks.value;
+                });
+
+                const groupsGridClass = computed(() => {
+                    const count = filteredGroups.value.length;
+                    if (count === 0) return 'cols-1';
+                    if (count === 1) return 'cols-1';
+                    if (count === 2) return 'cols-2';
+                    if (count === 3) return 'cols-3';
+                    if (count === 4) return 'cols-4';
+                    if (count >= 5) return 'cols-4';
+                });
+
+                const groupRows = computed(() => {
+                    const items = filteredGroups.value;
+                    const rows = [];
+                    const count = items.length;
+                    
+                    if (count <= 4) {
+                        rows.push({ items: items, cols: count });
+                        return rows;
+                    }
+                    
+                    rows.push({ items: items.slice(0, 4), cols: 4 });
+                    let remaining = count - 4;
+                    let index = 4;
+                    
+                    while (remaining > 0) {
+                        if (remaining >= 3) {
+                            rows.push({ items: items.slice(index, index + 3), cols: 3 });
+                            index += 3;
+                            remaining -= 3;
+                        } else if (remaining === 2) {
+                            rows.push({ items: items.slice(index, index + 2), cols: 2 });
+                            index += 2;
+                            remaining -= 2;
+                        } else if (remaining === 1) {
+                            if (rows.length > 0) {
+                                const lastRow = rows[rows.length - 1];
+                                if (lastRow.cols === 4) {
+                                    lastRow.cols = 3;
+                                    lastRow.items = items.slice(0, 3);
+                                    rows.push({ items: items.slice(3, 5), cols: 2 });
+                                } else if (lastRow.cols === 3) {
+                                    lastRow.cols = 2;
+                                    lastRow.items = items.slice(0, 2);
+                                    rows.push({ items: items.slice(2, 4), cols: 2 });
+                                } else {
+                                    rows.push({ items: items.slice(index, index + 1), cols: 1 });
+                                }
+                            }
+                            remaining = 0;
+                        }
+                    }
+                    
+                    return rows;
+                });
+
+                const linksGridClass = computed(() => {
+                    const count = filteredImportantLinks.value.length;
+                    if (count === 0) return 'cols-1';
+                    if (count === 1) return 'cols-1';
+                    if (count === 2) return 'cols-2';
+                    if (count >= 3) return 'cols-3';
+                });
+
+                const joinGroup = (group) => {
+                    showToastMessage(`Te has unido a "${group.name}"`);
+                };
+
+                const showToastMessage = (message) => {
+                    toastMessage.value = message;
+                    showToast.value = true;
+                    toastFading.value = false;
+                    setTimeout(() => {
+                        toastFading.value = true;
+                        setTimeout(() => {
+                            showToast.value = false;
+                        }, 300);
+                    }, 2500);
+                };
+
+                const checkAdminStatus = async () => {
+                    try {
+                        const response = await fetch('/api/admin/status');
+                        const data = await response.json();
+                        if (data.locked) {
+                            lockoutRemaining.value = true;
+                            lockoutMinutes.value = Math.ceil(data.remaining_seconds / 60);
+                        }
+                    } catch (error) {
+                        console.error('Error checking admin status:', error);
+                    }
+                };
+
+                const openCreateModal = async () => {
+                    if (isAdmin.value) {
+                        modalMode.value = 'create';
+                        showModal.value = true;
+                    } else {
+                        modalMode.value = 'login';
+                        adminPassword.value = '';
+                        loginError.value = '';
+                        showModal.value = true;
+                        checkAdminStatus();
+                    }
+                };
+
+                const openManageModal = () => {
+                    modalMode.value = 'manage';
+                    showModal.value = true;
+                };
+
+                const togglePin = async (group) => {
+                    try {
+                        const response = await fetch('/api/groups/pin', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ group_id: group.id, pinned: !group.pinned })
+                        });
+
+                        if (response.ok) {
+                            group.pinned = !group.pinned;
+                            showToastMessage(group.pinned ? ` "${group.name}" fijado` : ` "${group.name}" desfijado`);
+                        }
+                    } catch (error) {
+                        showToastMessage('Error al actualizar');
+                    }
+                };
+
+                const verifyAdmin = async () => {
+                    loginError.value = '';
+                    try {
+                        const response = await fetch('/api/admin/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password: adminPassword.value })
+                        });
+                        
+                        if (response.ok) {
+                            isAdmin.value = true;
+                            modalMode.value = 'create';
+                            showToastMessage('Acceso admin concedido');
+                        } else {
+                            const data = await response.json();
+                            loginError.value = data.detail;
+                            if (data.detail.includes('bloqueada')) {
+                                lockoutRemaining.value = true;
+                                checkAdminStatus();
+                            }
+                        }
+                    } catch (error) {
+                        loginError.value = 'Error de conexión';
+                    }
+                };
+
+                const createGroup = async () => {
+                    if (newGroup.value.name.length < 3) {
+                        showToastMessage('El nombre debe tener al menos 3 caracteres');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/groups', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(newGroup.value)
+                        });
+
+                        if (response.ok) {
+                            const group = await response.json();
+                            groups.value.unshift(group);
+                            closeModal();
+                            showToastMessage('Grupo creado exitosamente');
+                            newGroup.value = { name: '', description: '' };
+                        } else {
+                            const data = await response.json();
+                            showToastMessage(data.detail || 'Error al crear grupo');
+                        }
+                    } catch (error) {
+                        showToastMessage('Error de conexión');
+                    }
+                };
+
+                const closeModal = () => {
+                    showModal.value = false;
+                    adminPassword.value = '';
+                    loginError.value = '';
+                };
+
+                onMounted(() => {
+                    fetchGroups();
+                    fetchImportantLinks();
+                });
+
+                const fetchImportantLinks = async () => {
+                    try {
+                        const response = await fetch('/api/important-links');
+                        importantLinks.value = await response.json();
+                    } catch (error) {
+                        console.error('Error fetching important links:', error);
+                    }
+                };
+
+                return {
+                    groups,
+                    importantLinks,
+                    searchQuery,
+                    loading,
+                    filteredGroups,
+                    filteredImportantLinks,
+                    groupRows,
+                    linksGridClass,
+                    showModal,
+                    modalMode,
+                    isAdmin,
+                    adminPassword,
+                    loginError,
+                    lockoutRemaining,
+                    lockoutMinutes,
+                    newGroup,
+                    showToast,
+                    toastMessage,
+                    toastFading,
+                    debounceSearch,
+                    clearSearch,
+                    joinGroup,
+                    openCreateModal,
+                    openManageModal,
+                    togglePin,
+                    verifyAdmin,
+                    createGroup,
+                    closeModal
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
