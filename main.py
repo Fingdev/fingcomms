@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from database import engine, SessionLocal, Group, ImportantLink, Base, get_db
 
-app = FastAPI()
+app = FastAPI(root_path="/fingcomms")
 
 Base.metadata.create_all(bind=engine)
 
