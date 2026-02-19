@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import os
@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from database import engine, SessionLocal, Group, ImportantLink, Base, get_db
 
-app = FastAPI(root_path="/fingcomms")
+app = FastAPI(root_path=os.getenv("ROOT_PATH", ""))
 
 Base.metadata.create_all(bind=engine)
 
@@ -292,6 +292,13 @@ def serve_index():
 @app.get("/admin")
 def serve_admin():
     return FileResponse("static/admin.html")
+
+
+@app.get("/{path:path}")
+def serve_catch_all(path: str):
+    if path == "admin":
+        return FileResponse("static/admin.html")
+    return FileResponse("static/index.html")
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
