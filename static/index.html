@@ -288,7 +288,7 @@
             border: 1px solid #3d444d;
             display: flex;
             flex-direction: column;
-            min-height: 100px;
+            min-height: 120px;
             width: 100%;
             box-sizing: border-box;
         }
@@ -329,13 +329,13 @@
         }
 
         .join-btn {
-            width: auto;
-            padding: 6px 12px;
+            width: 100%;
+            padding: 8px 12px;
             background-color: #957dcd;
             color: #ffffff;
             border: none;
             border-radius: 6px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -672,16 +672,15 @@
                 <div class="groups-grid" v-for="(row, index) in groupRows" :key="index" :class="'cols-' + row.cols">
                     <div class="group-card" v-for="group in row.items" :key="group.id">
                     <div class="card-content">
-                        <div class="pinned-badge" v-if="group.pinned"><i class="fas fa-thumbtack"></i></div>
                         <h3 class="group-name">{{ group.name }}</h3>
                         <p class="group-description">{{ group.description }}</p>
                     </div>
                     <div class="join-btn-wrapper">
                         <a :href="group.url" target="_blank" class="join-btn" v-if="group.url">
-                            Unirse
+                            Unirse al Grupo
                         </a>
                         <button class="join-btn" @click="joinGroup(group)" v-else>
-                            Unirse
+                            Unirse al Grupo
                         </button>
                     </div>
                 </div>
