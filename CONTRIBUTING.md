@@ -1,18 +1,153 @@
-# Contributing
+# Contributing to Fingcomms
 
-Thanks for your interest in contributing!
+Thank you for your interest in contributing to Fingcomms! This guide will walk you through how to contribute, step by step.
 
-## Fork and Pull Request
+## Why Contribute?
 
-1. Fork the repository
-2. Create a branch for your feature/fix (`git checkout -b my-branch`)
-3. Make your changes and commit (`git commit -m "My change"`)
-4. Push to your fork (`git push origin my-branch`)
-5. Open a Pull Request
+Contributing to open source projects allows you to:
+- Learn new technologies
+- Build a professional portfolio
+- Help other students
+- Gain experience working in teams
 
-## Issues
+## Code of Conduct
 
-If you found a bug or have an idea for improvement:
+Be respectful to all other contributors. We do not tolerate:
+- Discriminatory comments or insults
+- Personal or professional harassment
+- Publishing private information about others
 
-- **Bug**: Report it in [Issues](https://github.com/emiliano-gandini-outeda/group-manager/issues) using the Bug template
-- **Feature**: Suggest it in [Issues](https://github.com/emiliano-gandini-outeda/group-manager/issues) using the Feature template
+## How to Contribute
+
+### Step 1: Fork the Repository
+
+A "fork" is a personal copy of the main repository on your GitHub account.
+
+1. Go to: https://github.com/fingdev/fingcomms
+2. Click the "Fork" button (top right)
+3. Select your GitHub account
+
+### Step 2: Clone Your Fork to Your Computer
+
+```bash
+git clone https://github.com/YOUR_USERNAME/fingcomms.git
+cd fingcomms
+```
+
+### Step 3: Create a New Branch
+
+Never work directly on the `main` branch. Create a new branch for your changes:
+
+```bash
+git checkout -b your-branch-name
+```
+
+Recommended branch naming:
+- `feature/add-search` (for new features)
+- `fix/login-error` (for bug fixes)
+- `docs/improve-readme` (for documentation)
+
+### Step 4: Make Your Changes
+
+Edit the files you need to modify to add your feature or fix the issue.
+
+### Step 5: Commit Your Changes
+
+A "commit" is like saving a snapshot of your changes.
+
+```bash
+git add .
+git commit -m "Clear description of what you did"
+```
+
+#### Commit Types (Conventional Commits)
+
+We use a standard commit message format:
+
+```
+type: brief description
+```
+
+**Commit types:**
+
+| Type | When to use |
+|------|-------------|
+| `feat:` | New feature |
+| `fix:` | Bug fix |
+| `docs:` | Documentation changes |
+| `style:` | Code changes that don't affect logic (spacing, formatting) |
+| `refactor:` | Rewriting code without changing functionality |
+| `test:` | Adding or fixing tests |
+| `chore:` | General maintenance tasks |
+
+**Examples:**
+```
+feat: add category filter to search
+fix: correct error when displaying empty groups
+docs: add installation instructions
+refactor: simplify validation function
+```
+
+### Step 6: Push Your Changes to GitHub
+
+```bash
+git push origin your-branch-name
+```
+
+### Step 7: Create a Pull Request (PR)
+
+A Pull Request is a proposal to add your changes to the original project.
+
+1. Go to your fork on GitHub
+2. You'll see a "Compare & pull request" button
+3. Click it
+4. Fill out the form:
+   - **Title**: Briefly describe your changes
+   - **Description**: Explain what you did and why
+   - **Reviews**: Request review if you know who should review
+5. Click "Create Pull Request"
+
+## Issue Templates
+
+Before creating an Issue, check if a similar one already exists.
+
+### Reporting a Bug
+
+Use the Bug template available in the Issues section.
+
+### Suggesting a Feature
+
+Use the Feature template available in the Issues section.
+
+## Code Standards
+
+- We use **English** for code and commit messages
+- Follow language conventions (PEP 8 for Python, etc.)
+- Add comments when code is not self-explanatory
+
+## How to Test Your Changes
+
+1. Run the application locally:
+   ```bash
+   docker-compose up --build
+   ```
+
+2. Verify your feature works correctly
+
+3. If you add new code, verify it doesn't break anything existing
+
+## Questions?
+
+- If you don't know how to do something, ask in Issues
+- If you need help, don't hesitate to ask
+- All contributors were where you are now
+
+## Next Steps
+
+Once your PR is approved:
+1. A maintainer will merge your changes to the main branch
+2. Congratulations! You're now an open source contributor
+
+---
+
+Have a question? Create an Issue and ask!
