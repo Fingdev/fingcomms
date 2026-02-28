@@ -23,7 +23,7 @@ Be respectful to all other contributors. We do not tolerate:
 
 A "fork" is a personal copy of the main repository on your GitHub account.
 
-1. Go to: https://github.com/fingdev/fingcomms
+1. Go to: https://github.com/LibrecourseUY/fingcomms
 2. Click the "Fork" button (top right)
 3. Select your GitHub account
 
